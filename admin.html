@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin · The Sticker Lab</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --blue:#7dd4e8;--blue-lt:#d6f1f9;--blue-dk:#3a9ab5;
+      --pink:#f7b8c8;--pink-lt:#fde8ee;
+      --black:#1e1a2e;--white:#fff;--off:#f5f9fc;--gray:#7a8fa0;
+      --border:#d3edf5;--bubble:#eaf7fc;
+      --green:#5dba8a;--green-lt:#d4f5e5;
+      --red:#e85c5c;--red-lt:#fde8e8;
+    }
+    body{font-family:'Nunito',sans-serif;background:var(--off);color:var(--black);min-height:100vh}
+
+    /* LOGIN */
+    #loginScreen{
+      display:flex;align-items:center;justify-content:center;
+      min-height:100vh;background:var(--bubble);
+    }
+    .login-card{
+      background:var(--white);border:2px solid var(--border);
+      border-radius:24px;padding:3rem 2.5rem;width:100%;max-width:400px;
+      text-align:center;
+    }
+    .login-card .flask{font-size:3.5rem;margin-bottom:1rem}
+    .login-card h1{font-family:'Fredoka',sans-serif;font-size:1.8rem;margin-bottom:0.25rem}
+    .login-card p{font-size:0.85rem;color:var(--gray);margin-bottom:2rem}
+    .login-card input{
+      width:100%;padding:0.8rem 1rem;border:2px solid var(--border);
+      border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.95rem;
+      margin-bottom:0.75rem;background:var(--off);color:var(--black);
+    }
+    .login-card input:focus{outline:none;border-color:var(--blue)}
+    .login-btn{
+      width:100%;padding:0.85rem;background:var(--blue);color:var(--black);
+      border:none;border-radius:100px;font-family:'Nunito',sans-serif;
+      font-size:1rem;font-weight:700;cursor:pointer;
+      box-shadow:0 4px 0 var(--blue-dk);transition:all 0.2s;
+    }
+    .login-btn:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--blue-dk)}
+    .login-err{color:var(--red);font-size:0.82rem;margin-top:0.75rem;display:none}
+
+    /* ADMIN SHELL */
+    #adminShell{display:none}
+
+    .top-bar{
+      background:var(--black);padding:0.9rem 2rem;
+      display:flex;align-items:center;justify-content:space-between;
+      position:sticky;top:0;z-index:100;
+    }
+    .top-bar-logo{
+      font-family:'Fredoka',sans-serif;font-size:1.2rem;
+      color:var(--white);display:flex;align-items:center;gap:0.5rem;
+    }
+    .top-bar-logo span{color:var(--blue)}
+    .top-bar-right{display:flex;align-items:center;gap:1rem}
+    .preview-btn{
+      background:var(--blue);color:var(--black);border:none;
+      padding:0.4rem 1.1rem;border-radius:100px;
+      font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:700;
+      cursor:pointer;text-decoration:none;transition:all 0.2s;
+    }
+    .preview-btn:hover{background:var(--pink)}
+    .logout-btn{
+      background:transparent;color:#6a7a8a;border:1px solid #3a3a5a;
+      padding:0.4rem 1rem;border-radius:100px;
+      font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:600;
+      cursor:pointer;transition:all 0.2s;
+    }
+    .logout-btn:hover{color:var(--white);border-color:#6a7a8a}
+
+    .admin-body{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 54px)}
+
+    /* SIDEBAR */
+    .sidebar{
+      background:var(--white);border-right:2px solid var(--border);
+      padding:1.5rem 1rem;
+    }
+    .sidebar-section{font-size:0.7rem;font-weight:700;letter-spacing:0.1em;
+      text-transform:uppercase;color:var(--gray);margin:1.2rem 0 0.5rem 0.5rem}
+    .nav-item{
+      display:flex;align-items:center;gap:0.6rem;
+      padding:0.6rem 0.75rem;border-radius:12px;
+      font-size:0.88rem;font-weight:600;color:var(--gray);
+      cursor:pointer;transition:all 0.15s;margin-bottom:2px;
+      border:none;background:transparent;width:100%;text-align:left;
+    }
+    .nav-item:hover{background:var(--bubble);color:var(--black)}
+    .nav-item.active{background:var(--blue-lt);color:var(--blue-dk)}
+    .nav-icon{font-size:1rem}
+
+    /* MAIN */
+    .main{padding:2rem;overflow-y:auto}
+
+    .page{display:none}
+    .page.active{display:block}
+
+    .page-header{margin-bottom:2rem}
+    .page-header h2{font-family:'Fredoka',sans-serif;font-size:1.8rem;font-weight:600}
+    .page-header p{font-size:0.85rem;color:var(--gray);margin-top:0.2rem}
+
+    /* SAVE BANNER */
+    .save-bar{
+      position:fixed;bottom:2rem;right:2rem;z-index:200;
+      background:var(--black);color:var(--white);
+      padding:0.75rem 1.5rem;border-radius:100px;
+      display:none;align-items:center;gap:1rem;
+      font-size:0.9rem;font-weight:600;
+      box-shadow:0 8px 24px rgba(0,0,0,0.25);
+    }
+    .save-bar.show{display:flex}
+    .save-bar-btn{
+      background:var(--blue);color:var(--black);border:none;
+      padding:0.4rem 1rem;border-radius:100px;
+      font-family:'Nunito',sans-serif;font-weight:700;font-size:0.85rem;
+      cursor:pointer;transition:all 0.2s;
+    }
+    .save-bar-btn:hover{background:var(--pink)}
+
+    /* CARDS */
+    .card{
+      background:var(--white);border:2px solid var(--border);
+      border-radius:20px;padding:1.5rem;margin-bottom:1.5rem;
+    }
+    .card-title{
+      font-family:'Fredoka',sans-serif;font-size:1.1rem;
+      margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;
+    }
+
+    /* FIELDS */
+    .field{display:flex;flex-direction:column;gap:0.4rem;margin-bottom:1rem}
+    .field label{font-size:0.78rem;font-weight:700;color:var(--black)}
+    .field input,.field textarea,.field select{
+      padding:0.7rem 1rem;border:2px solid var(--border);
+      border-radius:10px;font-family:'Nunito',sans-serif;
+      font-size:0.9rem;background:var(--off);color:var(--black);
+      transition:border-color 0.2s;width:100%;
+    }
+    .field input:focus,.field textarea:focus,.field select:focus{
+      outline:none;border-color:var(--blue);background:var(--white);
+    }
+    .field textarea{resize:vertical;min-height:80px}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+
+    /* PRODUCTS */
+    .product-list{display:flex;flex-direction:column;gap:1rem}
+    .product-item{
+      background:var(--white);border:2px solid var(--border);
+      border-radius:16px;padding:1rem 1.25rem;
+      display:grid;grid-template-columns:3rem 1fr 1fr auto auto;
+      align-items:center;gap:1rem;
+    }
+    .product-emoji{font-size:2rem;text-align:center}
+    .product-item input{
+      padding:0.5rem 0.75rem;border:2px solid var(--border);
+      border-radius:8px;font-family:'Nunito',sans-serif;
+      font-size:0.88rem;background:var(--off);color:var(--black);width:100%;
+    }
+    .product-item input:focus{outline:none;border-color:var(--blue);background:var(--white)}
+    .badge-input{width:100%}
+    .del-btn{
+      background:var(--red-lt);color:var(--red);border:none;
+      width:34px;height:34px;border-radius:8px;font-size:1.1rem;
+      cursor:pointer;transition:all 0.2s;flex-shrink:0;
+    }
+    .del-btn:hover{background:var(--red);color:var(--white)}
+
+    .add-btn{
+      background:var(--blue-lt);color:var(--blue-dk);border:2px dashed var(--blue);
+      border-radius:12px;padding:0.75rem;width:100%;
+      font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:700;
+      cursor:pointer;transition:all 0.2s;margin-top:0.5rem;
+    }
+    .add-btn:hover{background:var(--blue);color:var(--black)}
+
+    /* STEPS */
+    .step-item{
+      background:var(--white);border:2px solid var(--border);
+      border-radius:16px;padding:1rem 1.25rem;
+      display:grid;grid-template-columns:2.5rem 1fr 1fr;
+      align-items:center;gap:1rem;margin-bottom:0.75rem;
+    }
+    .step-num-badge{
+      background:var(--blue-lt);color:var(--blue-dk);
+      font-family:'Fredoka',sans-serif;font-size:1.2rem;font-weight:600;
+      border-radius:10px;height:2.5rem;display:flex;
+      align-items:center;justify-content:center;
+    }
+    .step-item input{
+      padding:0.5rem 0.75rem;border:2px solid var(--border);
+      border-radius:8px;font-family:'Nunito',sans-serif;
+      font-size:0.88rem;background:var(--off);color:var(--black);width:100%;
+    }
+    .step-item input:focus{outline:none;border-color:var(--blue);background:var(--white)}
+
+    /* BANNER */
+    .banner-preview{
+      border-radius:12px;padding:0.75rem 1.25rem;
+      margin-bottom:1rem;font-weight:700;font-size:0.95rem;
+      text-align:center;transition:all 0.3s;
+    }
+
+    /* TOAST */
+    .toast{
+      position:fixed;top:80px;right:2rem;z-index:999;
+      background:var(--green);color:var(--white);
+      padding:0.75rem 1.5rem;border-radius:100px;
+      font-weight:700;font-size:0.9rem;
+      opacity:0;transition:opacity 0.3s;pointer-events:none;
+    }
+    .toast.show{opacity:1}
+
+    @media(max-width:700px){
+      .admin-body{grid-template-columns:1fr}
+      .sidebar{display:none}
+      .product-item{grid-template-columns:2.5rem 1fr auto}
+      .row2,.row3{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="flask">🧪</div>
+    <h1>Admin Login</h1>
+    <p>The Sticker Lab · Control Panel</p>
+    <input type="text" id="loginUser" placeholder="Username" autocomplete="off"/>
+    <input type="password" id="loginPass" placeholder="Password"/>
+    <button class="login-btn" onclick="doLogin()">Enter the Lab 🔬</button>
+    <p class="login-err" id="loginErr">Wrong username or password!</p>
+  </div>
+</div>
+
+<!-- ADMIN SHELL -->
+<div id="adminShell">
+  <div class="top-bar">
+    <div class="top-bar-logo">🧪 The Sticker <span>Lab</span> · Admin</div>
+    <div class="top-bar-right">
+      <a class="preview-btn" href="index.html" target="_blank">Preview site 👀</a>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="admin-body">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-section">Content</div>
+      <button class="nav-item active" onclick="showPage('hero')"><span class="nav-icon">🏠</span> Hero section</button>
+      <button class="nav-item" onclick="showPage('stats')"><span class="nav-icon">📊</span> Stats bar</button>
+      <button class="nav-item" onclick="showPage('products')"><span class="nav-icon">🎨</span> Products</button>
+      <button class="nav-item" onclick="showPage('steps')"><span class="nav-icon">🔬</span> How it works</button>
+      <div class="sidebar-section">Marketing</div>
+      <button class="nav-item" onclick="showPage('banner')"><span class="nav-icon">📢</span> Promo banner</button>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+      <!-- HERO PAGE -->
+      <div class="page active" id="page-hero">
+        <div class="page-header">
+          <h2>🏠 Hero Section</h2>
+          <p>The first thing visitors see on your website</p>
+        </div>
+        <div class="card">
+          <div class="card-title">🏷️ Tag line (small text above title)</div>
+          <div class="field">
+            <label>Tag text</label>
+            <input type="text" id="heroTag" placeholder="e.g. 🧪 Made in Tunisia · Delivered to you"/>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">✏️ Main heading</div>
+          <div class="row2">
+            <div class="field">
+              <label>First part</label>
+              <input type="text" id="heroH1a" placeholder="Stickers as"/>
+            </div>
+            <div class="field">
+              <label>Highlighted word (blue)</label>
+              <input type="text" id="heroH1b" placeholder="fun"/>
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label>Second part</label>
+              <input type="text" id="heroH1c" placeholder="as you"/>
+            </div>
+            <div class="field">
+              <label>Ending word (pink)</label>
+              <input type="text" id="heroH1d" placeholder="are."/>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📝 Subtitle paragraph</div>
+          <div class="field">
+            <label>Subtitle</label>
+            <textarea id="heroSub" placeholder="Premium custom stickers for your laptop..."></textarea>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">🔘 Buttons</div>
+          <div class="row2">
+            <div class="field">
+              <label>Primary button text</label>
+              <input type="text" id="heroBtnA" placeholder="Browse catalog 🎨"/>
+            </div>
+            <div class="field">
+              <label>Secondary button text</label>
+              <input type="text" id="heroBtnB" placeholder="Place an order 📦"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATS PAGE -->
+      <div class="page" id="page-stats">
+        <div class="page-header">
+          <h2>📊 Stats Bar</h2>
+          <p>The 3 highlights shown in the blue bar</p>
+        </div>
+        <div class="card">
+          <div class="row3">
+            <div>
+              <div class="field"><label>Stat 1 — Number</label><input type="text" id="stat1n" placeholder="100%"/></div>
+              <div class="field"><label>Stat 1 — Label</label><input type="text" id="stat1l" placeholder="Waterproof vinyl 💧"/></div>
+            </div>
+            <div>
+              <div class="field"><label>Stat 2 — Number</label><input type="text" id="stat2n" placeholder="48h"/></div>
+              <div class="field"><label>Stat 2 — Label</label><input type="text" id="stat2l" placeholder="Processing time ⚡"/></div>
+            </div>
+            <div>
+              <div class="field"><label>Stat 3 — Number</label><input type="text" id="stat3n" placeholder="COD"/></div>
+              <div class="field"><label>Stat 3 — Label</label><input type="text" id="stat3l" placeholder="Pay on delivery 🤝"/></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS PAGE -->
+      <div class="page" id="page-products">
+        <div class="page-header">
+          <h2>🎨 Products</h2>
+          <p>Add, edit or remove stickers from your catalog</p>
+        </div>
+        <div class="card">
+          <div style="display:grid;grid-template-columns:3rem 1fr 1fr auto auto;gap:1rem;padding:0 0.25rem 0.5rem;border-bottom:2px solid var(--border);margin-bottom:0.75rem">
+            <span style="font-size:0.72rem;font-weight:700;color:var(--gray)">ICON</span>
+            <span style="font-size:0.72rem;font-weight:700;color:var(--gray)">NAME · DESCRIPTION</span>
+            <span style="font-size:0.72rem;font-weight:700;color:var(--gray)">PRICE · BADGE</span>
+            <span></span><span></span>
+          </div>
+          <div class="product-list" id="productList"></div>
+          <button class="add-btn" onclick="addProduct()">+ Add new product</button>
+        </div>
+      </div>
+
+      <!-- STEPS PAGE -->
+      <div class="page" id="page-steps">
+        <div class="page-header">
+          <h2>🔬 How It Works</h2>
+          <p>Edit the 4 steps customers see on the website</p>
+        </div>
+        <div class="card" id="stepsList"></div>
+      </div>
+
+      <!-- BANNER PAGE -->
+      <div class="page" id="page-banner">
+        <div class="page-header">
+          <h2>📢 Promo Banner</h2>
+          <p>Show a promotion or announcement at the top of your site</p>
+        </div>
+        <div class="card">
+          <div class="field">
+            <label>Banner text</label>
+            <input type="text" id="bannerText" placeholder="e.g. 🎉 FREE delivery this week on orders over 20 DT!"/>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label>Background color</label>
+              <select id="bannerColor">
+                <option value="blue">Blue (default)</option>
+                <option value="pink">Pink</option>
+                <option value="green">Green</option>
+                <option value="black">Black</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Show banner?</label>
+              <select id="bannerVisible">
+                <option value="yes">Yes — show on site</option>
+                <option value="no">No — hide it</option>
+              </select>
+            </div>
+          </div>
+          <div class="banner-preview" id="bannerPreview">Preview will appear here</div>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /admin-body -->
+</div><!-- /adminShell -->
+
+<!-- SAVE BAR -->
+<div class="save-bar" id="saveBar">
+  <span>You have unsaved changes</span>
+  <button class="save-bar-btn" onclick="saveAll()">Save & publish ✨</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✅ Saved! Refresh your site to see changes.</div>
+
+<script>
+// ── CREDENTIALS (change these!) ──
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'sticker123';
+
+// ── AUTH ──
+function doLogin(){
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if(u === ADMIN_USER && p === ADMIN_PASS){
+    sessionStorage.setItem('slab_auth','1');
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('adminShell').style.display='block';
+    loadAll();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+  }
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('loginUser').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogout(){
+  sessionStorage.removeItem('slab_auth');
+  location.reload();
+}
+
+if(sessionStorage.getItem('slab_auth')==='1'){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('adminShell').style.display='block';
+}
+
+// ── NAVIGATION ──
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ── DIRTY TRACKING ──
+let dirty = false;
+function markDirty(){ dirty=true; document.getElementById('saveBar').classList.add('show'); }
+document.addEventListener('input', markDirty);
+document.addEventListener('change', markDirty);
+
+// ── DEFAULT DATA ──
+const defaults = {
+  hero:{ tag:'🧪 Made in Tunisia · Delivered to you', h1a:'Stickers as', h1b:'fun', h1c:'as you', h1d:'are.', sub:'Premium custom stickers for your laptop, bottle, notebook, or wherever you want a little magic. Order, pay on delivery — easy!', btnA:'Browse catalog 🎨', btnB:'Place an order 📦' },
+  stats:{ s1n:'100%',s1l:'Waterproof vinyl 💧',s2n:'48h',s2l:'Processing time ⚡',s3n:'COD',s3l:'Pay on delivery 🤝' },
+  products:[
+    {emoji:'🌵',name:'Desert Vibes Pack',desc:'Set of 5 · Waterproof vinyl',price:'12 DT',badge:'⭐ Popular'},
+    {emoji:'🌙',name:'Night Sky Series',desc:'Set of 4 · Glossy finish',price:'10 DT',badge:''},
+    {emoji:'⚡',name:'Energy Drop',desc:'Single sticker · Matte finish',price:'3 DT',badge:'🆕 New'},
+    {emoji:'🎨',name:'Custom Order',desc:'Your design · Any size',price:'From 5 DT',badge:''},
+  ],
+  steps:[
+    {title:'Browse & choose 👀',desc:'Pick from our catalog or describe your custom design idea.'},
+    {title:'Fill the form 📝',desc:'Share your details — name, phone, address, and what you want.'},
+    {title:'We confirm 📱',desc:"We'll contact you within 24 hours to confirm your order."},
+    {title:'Pay on delivery 🤝',desc:'Receive your stickers and pay cash. Simple as that!'},
+  ],
+  banner:{ text:'', color:'blue', visible:'no' }
+};
+
+function load(key){ try{ const v=localStorage.getItem('slab_'+key); return v?JSON.parse(v):null; }catch(e){ return null; } }
+function save(key,val){ localStorage.setItem('slab_'+key,JSON.stringify(val)); }
+
+// ── LOAD ALL ──
+function loadAll(){
+  const hero = load('hero') || defaults.hero;
+  document.getElementById('heroTag').value  = hero.tag;
+  document.getElementById('heroH1a').value  = hero.h1a;
+  document.getElementById('heroH1b').value  = hero.h1b;
+  document.getElementById('heroH1c').value  = hero.h1c;
+  document.getElementById('heroH1d').value  = hero.h1d;
+  document.getElementById('heroSub').value  = hero.sub;
+  document.getElementById('heroBtnA').value = hero.btnA;
+  document.getElementById('heroBtnB').value = hero.btnB;
+
+  const stats = load('stats') || defaults.stats;
+  document.getElementById('stat1n').value = stats.s1n;
+  document.getElementById('stat1l').value = stats.s1l;
+  document.getElementById('stat2n').value = stats.s2n;
+  document.getElementById('stat2l').value = stats.s2l;
+  document.getElementById('stat3n').value = stats.s3n;
+  document.getElementById('stat3l').value = stats.s3l;
+
+  renderProducts(load('products') || defaults.products);
+  renderSteps(load('steps') || defaults.steps);
+
+  const banner = load('banner') || defaults.banner;
+  document.getElementById('bannerText').value    = banner.text;
+  document.getElementById('bannerColor').value   = banner.color;
+  document.getElementById('bannerVisible').value = banner.visible;
+  updateBannerPreview();
+
+  dirty = false;
+  document.getElementById('saveBar').classList.remove('show');
+}
+
+// ── PRODUCTS ──
+function renderProducts(prods){
+  const list = document.getElementById('productList');
+  list.innerHTML = '';
+  prods.forEach((p,i) => {
+    const div = document.createElement('div');
+    div.className = 'product-item';
+    div.innerHTML = `
+      <input type="text" value="${p.emoji}" placeholder="🎨" style="font-size:1.6rem;text-align:center;padding:0.3rem" data-pi="${i}" data-pf="emoji"/>
+      <div style="display:flex;flex-direction:column;gap:0.5rem">
+        <input type="text" value="${p.name}" placeholder="Product name" data-pi="${i}" data-pf="name"/>
+        <input type="text" value="${p.desc}" placeholder="Description" data-pi="${i}" data-pf="desc"/>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem">
+        <input type="text" value="${p.price}" placeholder="Price e.g. 12 DT" data-pi="${i}" data-pf="price"/>
+        <input type="text" value="${p.badge}" placeholder="Badge (optional)" data-pi="${i}" data-pf="badge"/>
+      </div>
+      <button class="del-btn" onclick="deleteProduct(${i})" title="Delete">✕</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function getProducts(){
+  const items = document.querySelectorAll('#productList .product-item');
+  return Array.from(items).map(item => ({
+    emoji: item.querySelector('[data-pf="emoji"]').value,
+    name:  item.querySelector('[data-pf="name"]').value,
+    desc:  item.querySelector('[data-pf="desc"]').value,
+    price: item.querySelector('[data-pf="price"]').value,
+    badge: item.querySelector('[data-pf="badge"]').value,
+  }));
+}
+
+function addProduct(){
+  const prods = getProducts();
+  prods.push({emoji:'✨',name:'New Sticker',desc:'Description here',price:'5 DT',badge:''});
+  renderProducts(prods);
+  markDirty();
+}
+
+function deleteProduct(i){
+  if(!confirm('Delete this product?')) return;
+  const prods = getProducts();
+  prods.splice(i,1);
+  renderProducts(prods);
+  markDirty();
+}
+
+// ── STEPS ──
+function renderSteps(steps){
+  const el = document.getElementById('stepsList');
+  el.innerHTML = '<div class="card-title">✏️ Edit the 4 steps</div>';
+  steps.forEach((s,i) => {
+    const div = document.createElement('div');
+    div.className = 'step-item';
+    div.innerHTML = `
+      <div class="step-num-badge">0${i+1}</div>
+      <input type="text" value="${s.title}" placeholder="Step title" data-si="${i}" data-sf="title"/>
+      <input type="text" value="${s.desc}"  placeholder="Step description" data-si="${i}" data-sf="desc"/>
+    `;
+    el.appendChild(div);
+  });
+}
+
+function getSteps(){
+  return Array.from(document.querySelectorAll('#stepsList .step-item')).map(item => ({
+    title: item.querySelector('[data-sf="title"]').value,
+    desc:  item.querySelector('[data-sf="desc"]').value,
+  }));
+}
+
+// ── BANNER PREVIEW ──
+const bannerColors = {
+  blue:  {bg:'#d6f1f9',color:'#3a9ab5'},
+  pink:  {bg:'#fde8ee',color:'#c06080'},
+  green: {bg:'#d4f5e5',color:'#2d7a55'},
+  black: {bg:'#1e1a2e',color:'#ffffff'},
+};
+
+function updateBannerPreview(){
+  const text  = document.getElementById('bannerText').value || '(no text)';
+  const color = document.getElementById('bannerColor').value;
+  const vis   = document.getElementById('bannerVisible').value;
+  const c = bannerColors[color] || bannerColors.blue;
+  const prev = document.getElementById('bannerPreview');
+  prev.style.background = c.bg;
+  prev.style.color = c.color;
+  prev.textContent = vis === 'yes' ? text : '🙈 Banner is hidden';
+}
+
+document.getElementById('bannerText').addEventListener('input',    updateBannerPreview);
+document.getElementById('bannerColor').addEventListener('change',  updateBannerPreview);
+document.getElementById('bannerVisible').addEventListener('change',updateBannerPreview);
+
+// ── SAVE ALL ──
+function saveAll(){
+  save('hero',{
+    tag:  document.getElementById('heroTag').value,
+    h1a:  document.getElementById('heroH1a').value,
+    h1b:  document.getElementById('heroH1b').value,
+    h1c:  document.getElementById('heroH1c').value,
+    h1d:  document.getElementById('heroH1d').value,
+    sub:  document.getElementById('heroSub').value,
+    btnA: document.getElementById('heroBtnA').value,
+    btnB: document.getElementById('heroBtnB').value,
+  });
+  save('stats',{
+    s1n: document.getElementById('stat1n').value,
+    s1l: document.getElementById('stat1l').value,
+    s2n: document.getElementById('stat2n').value,
+    s2l: document.getElementById('stat2l').value,
+    s3n: document.getElementById('stat3n').value,
+    s3l: document.getElementById('stat3l').value,
+  });
+  save('products', getProducts());
+  save('steps', getSteps());
+  save('banner',{
+    text:    document.getElementById('bannerText').value,
+    color:   document.getElementById('bannerColor').value,
+    visible: document.getElementById('bannerVisible').value,
+  });
+
+  dirty = false;
+  document.getElementById('saveBar').classList.remove('show');
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'), 3000);
+}
+
+// load on auth check
+if(sessionStorage.getItem('slab_auth')==='1') loadAll();
+</script>
+</body>
+</html>

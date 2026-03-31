@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Sticker Lab</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:#7dd4e8;--blue-lt:#d6f1f9;--blue-dk:#3a9ab5;
+      --pink:#f7b8c8;--pink-lt:#fde8ee;
+      --black:#1e1a2e;--white:#ffffff;--off:#f5f9fc;--gray:#7a8fa0;
+      --border:#d3edf5;--bubble:#eaf7fc;
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:'Nunito',sans-serif;background:var(--white);color:var(--black);font-size:16px;line-height:1.7;overflow-x:hidden}
+    body::before{content:'';position:fixed;top:-120px;right:-120px;width:400px;height:400px;background:var(--blue-lt);border-radius:50%;z-index:-1;opacity:.6}
+    body::after{content:'';position:fixed;bottom:-100px;left:-100px;width:320px;height:320px;background:var(--pink-lt);border-radius:50%;z-index:-1;opacity:.5}
+
+    /* PROMO BANNER */
+    #promoBanner{
+      display:none;padding:.6rem 1.5rem;text-align:center;
+      font-weight:700;font-size:.9rem;
+    }
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.88);backdrop-filter:blur(12px);border-bottom:2px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:.9rem 2.5rem}
+    .logo-wrap{display:flex;align-items:center;gap:.6rem;text-decoration:none}
+    .logo-img{width:42px;height:42px;object-fit:contain}
+    .logo-text{font-family:'Fredoka',sans-serif;font-size:1.4rem;font-weight:600;color:var(--black)}
+    .logo-text span{color:var(--blue-dk)}
+    nav ul{list-style:none;display:flex;gap:1.8rem;align-items:center}
+    nav ul a{text-decoration:none;color:var(--gray);font-size:.95rem;font-weight:600;transition:color .2s}
+    nav ul a:hover{color:var(--black)}
+    .nav-cta{background:var(--blue)!important;color:var(--black)!important;padding:.5rem 1.3rem;border-radius:100px;font-weight:700!important;box-shadow:0 3px 0 var(--blue-dk);transition:all .2s!important}
+    .nav-cta:hover{background:var(--pink)!important;box-shadow:0 3px 0 #d98fa5!important;transform:translateY(-1px);color:var(--black)!important}
+
+    /* HERO */
+    .hero{display:grid;grid-template-columns:1fr 1fr;min-height:88vh;align-items:center}
+    .hero-text{padding:5rem 3rem 5rem 5rem}
+    .hero-tag{display:inline-flex;align-items:center;gap:.4rem;background:var(--blue-lt);color:var(--blue-dk);font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.35rem .9rem;border-radius:100px;margin-bottom:1.5rem}
+    .hero-text h1{font-family:'Fredoka',sans-serif;font-size:clamp(2.6rem,5vw,4rem);font-weight:600;line-height:1.1;color:var(--black);margin-bottom:1.2rem}
+    .hero-text h1 .wave{color:var(--blue-dk)}
+    .hero-text h1 .pop{color:var(--pink)}
+    .hero-text p{font-size:1.05rem;color:var(--gray);max-width:420px;margin-bottom:2.5rem}
+    .cta-group{display:flex;gap:1rem;flex-wrap:wrap}
+    .btn{display:inline-block;text-decoration:none;font-family:'Nunito',sans-serif;font-weight:700;font-size:1rem;border-radius:100px;padding:.8rem 2rem;transition:all .2s;cursor:pointer;border:none}
+    .btn-primary{background:var(--blue);color:var(--black);box-shadow:0 4px 0 var(--blue-dk)}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--blue-dk)}
+    .btn-secondary{background:var(--pink-lt);color:var(--black);box-shadow:0 4px 0 #e8a0b5}
+    .btn-secondary:hover{background:var(--pink);transform:translateY(-2px)}
+    .hero-visual{background:var(--bubble);height:100%;display:flex;align-items:center;justify-content:center;padding:4rem 3rem}
+    .flask-center{display:flex;flex-direction:column;align-items:center;gap:1.5rem}
+    .logo-big{width:220px;height:220px;object-fit:contain;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 12px 24px rgba(125,212,232,.35))}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+    .sticker-orbit{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center;max-width:300px}
+    .s-chip{background:var(--white);border:2px solid var(--border);border-radius:100px;padding:.35rem .85rem;font-size:.82rem;font-weight:700;color:var(--black);box-shadow:0 2px 0 var(--border);transition:transform .2s}
+    .s-chip:hover{transform:scale(1.05) rotate(-2deg)}
+
+    /* STATS */
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);background:var(--blue)}
+    .stat{padding:2rem 3rem;border-right:2px solid rgba(255,255,255,.3);text-align:center}
+    .stat:last-child{border-right:none}
+    .stat-number{font-family:'Fredoka',sans-serif;font-size:2.6rem;font-weight:600;color:var(--black);line-height:1;margin-bottom:.3rem}
+    .stat-label{font-size:.85rem;color:var(--blue-dk);font-weight:700}
+
+    /* CATALOG */
+    .catalog{padding:5rem}
+    .section-tag{display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue-dk);background:var(--blue-lt);padding:.25rem .75rem;border-radius:100px;margin-bottom:.75rem}
+    .section-title{font-family:'Fredoka',sans-serif;font-size:clamp(2rem,3vw,2.6rem);font-weight:600;color:var(--black);line-height:1.1;margin-bottom:2.5rem}
+    .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.5rem}
+    .product{background:var(--white);border:2px solid var(--border);border-radius:20px;overflow:hidden;transition:transform .2s,box-shadow .2s}
+    .product:hover{transform:translateY(-4px) rotate(-.5deg);box-shadow:0 12px 28px rgba(125,212,232,.25)}
+    .product-img{background:var(--bubble);aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:4rem;position:relative}
+    .product-badge{position:absolute;top:.75rem;right:.75rem;background:var(--pink);color:var(--black);font-size:.68rem;font-weight:800;padding:.25rem .6rem;border-radius:100px;box-shadow:0 2px 0 #d98fa5}
+    .product-info{padding:1rem 1.2rem;border-top:2px solid var(--border)}
+    .product-name{font-weight:700;font-size:.95rem;margin-bottom:.2rem}
+    .product-desc{font-size:.78rem;color:var(--gray);margin-bottom:.6rem}
+    .product-price{font-family:'Fredoka',sans-serif;font-size:1.3rem;color:var(--blue-dk)}
+
+    /* HOW */
+    .how{background:var(--bubble);padding:5rem;border-top:2px solid var(--border);border-bottom:2px solid var(--border)}
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:2.5rem}
+    .step{background:var(--white);border:2px solid var(--border);border-radius:20px;padding:1.8rem 1.5rem;transition:transform .2s}
+    .step:hover{transform:translateY(-3px)}
+    .step-num{font-family:'Fredoka',sans-serif;font-size:2.4rem;font-weight:600;color:var(--blue);line-height:1;margin-bottom:.75rem}
+    .step-title{font-weight:700;font-size:.95rem;margin-bottom:.4rem}
+    .step-desc{font-size:.83rem;color:var(--gray);line-height:1.6}
+
+    /* ORDER */
+    .order-section{padding:5rem;display:grid;grid-template-columns:1fr 1.2fr;gap:5rem;align-items:start}
+    .order-info .section-title{margin-bottom:1rem}
+    .order-info>p{color:var(--gray);font-size:.95rem;margin-bottom:2rem}
+    .info-item{display:flex;gap:1rem;margin-bottom:1.2rem;align-items:flex-start}
+    .info-icon{width:40px;height:40px;background:var(--blue-lt);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;border:2px solid var(--border)}
+    .info-text strong{display:block;font-size:.875rem;font-weight:700;margin-bottom:.1rem}
+    .info-text span{font-size:.8rem;color:var(--gray)}
+    .form-card{background:var(--white);border:2px solid var(--border);border-radius:24px;padding:2.5rem}
+    form{display:flex;flex-direction:column;gap:1rem}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .field{display:flex;flex-direction:column;gap:.4rem}
+    label{font-size:.8rem;font-weight:700;color:var(--black)}
+    input,select,textarea{padding:.75rem 1rem;border:2px solid var(--border);border-radius:12px;font-family:'Nunito',sans-serif;font-size:.9rem;background:var(--off);color:var(--black);transition:border-color .2s,background .2s;width:100%}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);background:var(--white)}
+    textarea{resize:vertical;min-height:100px}
+    .submit-btn{background:var(--blue);color:var(--black);border:none;padding:.9rem 2rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;width:100%;margin-top:.5rem;box-shadow:0 4px 0 var(--blue-dk)}
+    .submit-btn:hover{background:var(--pink);box-shadow:0 4px 0 #d98fa5;transform:translateY(-1px)}
+    .form-note{font-size:.78rem;color:var(--gray);text-align:center;font-weight:600}
+    .success-msg{display:none;text-align:center;padding:3rem 2rem}
+    .success-msg.show{display:block}
+    .success-msg .check{font-size:3.5rem;margin-bottom:1rem}
+    .success-msg h3{font-family:'Fredoka',sans-serif;font-size:2rem;margin-bottom:.75rem;color:var(--blue-dk)}
+    .success-msg p{color:var(--gray);font-size:.9rem}
+
+    /* FOOTER */
+    footer{background:var(--black);padding:2rem 5rem;display:flex;align-items:center;justify-content:space-between}
+    .footer-logo{font-family:'Fredoka',sans-serif;font-size:1.2rem;font-weight:600;color:var(--white);text-decoration:none}
+    .footer-logo span{color:var(--blue)}
+    footer p{font-size:.78rem;color:#6a7a8a}
+    .footer-links{display:flex;gap:1.5rem}
+    .footer-links a{font-size:.8rem;color:#6a7a8a;text-decoration:none;font-weight:600;transition:color .2s}
+    .footer-links a:hover{color:var(--blue)}
+
+    /* ADMIN LINK */
+    .admin-link{font-size:.72rem;color:#3a3a5a;text-decoration:none;opacity:.5;transition:opacity .2s}
+    .admin-link:hover{opacity:1;color:var(--blue)}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+    .hero-text>*{opacity:0;animation:fadeUp .55s ease forwards}
+    .hero-tag{animation-delay:.1s}.hero-text h1{animation-delay:.2s}.hero-text p{animation-delay:.3s}.cta-group{animation-delay:.4s}
+
+    @media(max-width:900px){
+      .hero{grid-template-columns:1fr;min-height:auto}
+      .hero-text{padding:4rem 2rem 2rem}
+      .hero-visual{min-height:320px;padding:3rem 2rem}
+      .stats{grid-template-columns:1fr}
+      .stat{border-right:none;border-bottom:2px solid rgba(255,255,255,.3)}
+      .catalog,.how,.order-section{padding:3rem 1.5rem}
+      .steps{grid-template-columns:1fr 1fr}
+      .order-section{grid-template-columns:1fr;gap:2.5rem}
+      nav ul{display:none}
+      footer{flex-direction:column;gap:1rem;padding:2rem 1.5rem;text-align:center}
+    }
+    @media(max-width:500px){
+      .steps{grid-template-columns:1fr}
+      .form-row{grid-template-columns:1fr}
+      .form-card{padding:1.5rem}
+    }
+  </style>
+</head>
+<body>
+
+<!-- PROMO BANNER (controlled by admin) -->
+<div id="promoBanner"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="logo-wrap" href="#">
+    <img class="logo-img" src="logo.png" alt="The Sticker Lab logo" onerror="this.style.display='none'"/>
+    <span class="logo-text">The Sticker <span>Lab</span></span>
+  </a>
+  <ul>
+    <li><a href="#catalog">Catalog</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#order" class="nav-cta">Order now ✨</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <span class="hero-tag" id="heroTag"></span>
+    <h1 id="heroH1"></h1>
+    <p id="heroSub"></p>
+    <div class="cta-group">
+      <a href="#catalog" class="btn btn-primary" id="heroBtnA"></a>
+      <a href="#order" class="btn btn-secondary" id="heroBtnB"></a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="flask-center">
+      <img class="logo-big" src="logo.png" alt="The Sticker Lab" onerror="this.style.display='none'"/>
+      <div class="sticker-orbit">
+        <span class="s-chip">🌵 Desert</span>
+        <span class="s-chip">⚡ Bold</span>
+        <span class="s-chip">🌙 Night</span>
+        <span class="s-chip">🎨 Custom</span>
+        <span class="s-chip">🌊 Chill</span>
+        <span class="s-chip">✨ Cute</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="stat-number" id="stat1n"></div><div class="stat-label" id="stat1l"></div></div>
+  <div class="stat"><div class="stat-number" id="stat2n"></div><div class="stat-label" id="stat2l"></div></div>
+  <div class="stat"><div class="stat-number" id="stat3n"></div><div class="stat-label" id="stat3l"></div></div>
+</div>
+
+<!-- CATALOG -->
+<section class="catalog" id="catalog">
+  <div class="section-tag">Our products</div>
+  <h2 class="section-title">Browse the collection 🧪</h2>
+  <div class="product-grid" id="productGrid"></div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="section-tag">Process</div>
+  <h2 class="section-title">How it works 🔬</h2>
+  <div class="steps" id="stepsGrid"></div>
+</section>
+
+<!-- ORDER -->
+<section class="order-section" id="order">
+  <div class="order-info">
+    <div class="section-tag">Order</div>
+    <h2 class="section-title">Ready? Let's go! 🚀</h2>
+    <p>Fill in the form and we'll reach out to confirm everything. No payment needed upfront — you pay when your stickers arrive.</p>
+    <div class="info-item">
+      <div class="info-icon">📦</div>
+      <div class="info-text"><strong>Cash on delivery</strong><span>Pay only when you receive your order</span></div>
+    </div>
+    <div class="info-item">
+      <div class="info-icon">🚚</div>
+      <div class="info-text"><strong>Tunisia delivery</strong><span>We ship across all governorates</span></div>
+    </div>
+    <div class="info-item">
+      <div class="info-icon">📱</div>
+      <div class="info-text"><strong>We contact you</strong><span>Expect a call or message within 24 hours</span></div>
+    </div>
+  </div>
+  <div class="form-card">
+    <form id="orderForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+      <div class="form-row">
+        <div class="field"><label>First name</label><input type="text" name="first_name" placeholder="Ali" required/></div>
+        <div class="field"><label>Last name</label><input type="text" name="last_name" placeholder="Ben Salem" required/></div>
+      </div>
+      <div class="field"><label>Phone number</label><input type="tel" name="phone" placeholder="+216 XX XXX XXX" required/></div>
+      <div class="field">
+        <label>Governorate</label>
+        <select name="governorate" required>
+          <option value="">Select your governorate</option>
+          <option>Tunis</option><option>Sfax</option><option>Sousse</option>
+          <option>Monastir</option><option>Bizerte</option><option>Gabès</option>
+          <option>Ariana</option><option>Ben Arous</option><option>Nabeul</option>
+          <option>Gafsa</option><option>Kairouan</option><option>Kasserine</option>
+          <option>Médenine</option><option>Tozeur</option><option>Béja</option>
+          <option>Jendouba</option><option>Kef</option><option>Mahdia</option>
+          <option>Manouba</option><option>Tataouine</option><option>Siliana</option>
+          <option>Zaghouan</option><option>Kebili</option>
+        </select>
+      </div>
+      <div class="field"><label>Delivery address</label><input type="text" name="address" placeholder="Street, city..." required/></div>
+      <div class="field">
+        <label>What would you like to order? 🎨</label>
+        <textarea name="order_details" placeholder="e.g. Desert Vibes Pack x2, one custom sticker with my logo..." required></textarea>
+      </div>
+      <button type="submit" class="submit-btn">Send my order ✨</button>
+      <p class="form-note">🧪 We'll contact you within 24 hours to confirm!</p>
+    </form>
+    <div class="success-msg" id="successMsg">
+      <div class="check">🧪✅</div>
+      <h3>Order received!</h3>
+      <p>Thanks! We'll contact you within 24 hours to confirm your order and arrange delivery.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a class="footer-logo" href="#">The Sticker <span>Lab</span></a>
+  <p>© 2025 The Sticker Lab · Tunisia</p>
+  <div class="footer-links">
+    <a href="#catalog">Catalog</a>
+    <a href="#order">Order</a>
+    <a href="admin.html" class="admin-link">⚙️ Admin</a>
+  </div>
+</footer>
+
+<script>
+  // ── DEFAULTS ──
+  const D = {
+    hero:{ tag:'🧪 Made in Tunisia · Delivered to you', h1a:'Stickers as', h1b:'fun', h1c:'as you', h1d:'are.', sub:'Premium custom stickers for your laptop, bottle, notebook, or wherever you want a little magic. Order, pay on delivery — easy!', btnA:'Browse catalog 🎨', btnB:'Place an order 📦' },
+    stats:{ s1n:'100%',s1l:'Waterproof vinyl 💧',s2n:'48h',s2l:'Processing time ⚡',s3n:'COD',s3l:'Pay on delivery 🤝' },
+    products:[
+      {emoji:'🌵',name:'Desert Vibes Pack',desc:'Set of 5 · Waterproof vinyl',price:'12 DT',badge:'⭐ Popular'},
+      {emoji:'🌙',name:'Night Sky Series',desc:'Set of 4 · Glossy finish',price:'10 DT',badge:''},
+      {emoji:'⚡',name:'Energy Drop',desc:'Single sticker · Matte finish',price:'3 DT',badge:'🆕 New'},
+      {emoji:'🎨',name:'Custom Order',desc:'Your design · Any size',price:'From 5 DT',badge:''},
+    ],
+    steps:[
+      {title:'Browse & choose 👀',desc:'Pick from our catalog or describe your custom design idea.'},
+      {title:'Fill the form 📝',desc:'Share your details — name, phone, address, and what you want.'},
+      {title:'We confirm 📱',desc:"We'll contact you within 24 hours to confirm your order."},
+      {title:'Pay on delivery 🤝',desc:'Receive your stickers and pay cash. Simple as that!'},
+    ],
+    banner:{ text:'', color:'blue', visible:'no' }
+  };
+
+  function load(key, def){ try{ const v=localStorage.getItem('slab_'+key); return v?JSON.parse(v):def; }catch(e){ return def; } }
+
+  // BANNER
+  const banner = load('banner', D.banner);
+  if(banner.visible === 'yes' && banner.text){
+    const colors = {blue:{bg:'#d6f1f9',color:'#3a9ab5'},pink:{bg:'#fde8ee',color:'#c06080'},green:{bg:'#d4f5e5',color:'#2d7a55'},black:{bg:'#1e1a2e',color:'#ffffff'}};
+    const c = colors[banner.color] || colors.blue;
+    const el = document.getElementById('promoBanner');
+    el.style.display = 'block';
+    el.style.background = c.bg;
+    el.style.color = c.color;
+    el.textContent = banner.text;
+  }
+
+  // HERO
+  const hero = load('hero', D.hero);
+  document.getElementById('heroTag').textContent = hero.tag;
+  document.getElementById('heroH1').innerHTML = `${hero.h1a} <span class="wave">${hero.h1b}</span> ${hero.h1c} <span class="pop">${hero.h1d}</span>`;
+  document.getElementById('heroSub').textContent = hero.sub;
+  document.getElementById('heroBtnA').textContent = hero.btnA;
+  document.getElementById('heroBtnB').textContent = hero.btnB;
+
+  // STATS
+  const stats = load('stats', D.stats);
+  document.getElementById('stat1n').textContent = stats.s1n;
+  document.getElementById('stat1l').textContent = stats.s1l;
+  document.getElementById('stat2n').textContent = stats.s2n;
+  document.getElementById('stat2l').textContent = stats.s2l;
+  document.getElementById('stat3n').textContent = stats.s3n;
+  document.getElementById('stat3l').textContent = stats.s3l;
+
+  // PRODUCTS
+  const products = load('products', D.products);
+  const grid = document.getElementById('productGrid');
+  products.forEach(p => {
+    grid.innerHTML += `
+      <div class="product">
+        <div class="product-img">${p.emoji}${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}</div>
+        <div class="product-info">
+          <div class="product-name">${p.name}</div>
+          <div class="product-desc">${p.desc}</div>
+          <div class="product-price">${p.price}</div>
+        </div>
+      </div>`;
+  });
+
+  // STEPS
+  const steps = load('steps', D.steps);
+  const sg = document.getElementById('stepsGrid');
+  steps.forEach((s,i) => {
+    sg.innerHTML += `
+      <div class="step">
+        <div class="step-num">0${i+1}</div>
+        <div class="step-title">${s.title}</div>
+        <div class="step-desc">${s.desc}</div>
+      </div>`;
+  });
+
+  // ORDER FORM
+  const form = document.getElementById('orderForm');
+  const successMsg = document.getElementById('successMsg');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if(form.action.includes('YOUR_FORM_ID')){
+      form.style.display='none'; successMsg.classList.add('show'); return;
+    }
+    try{
+      const res = await fetch(form.action,{method:'POST',body:new FormData(form),headers:{'Accept':'application/json'}});
+      if(res.ok){ form.style.display='none'; successMsg.classList.add('show'); }
+      else alert('Something went wrong. Please try again.');
+    }catch{ alert('Network error. Please try again.'); }
+  });
+</script>
+</body>
+</html>
